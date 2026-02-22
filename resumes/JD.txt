@@ -1,0 +1,9 @@
+We are hiring a QA Automation Engineer.
+
+Required Skills:
+Python, Selenium, SQL, Automation Testing
+
+Good to have:
+HTML, CSS, JavaScript
+
+Experience: 2+ years in automation testing and web applications.

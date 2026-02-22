@@ -1,0 +1,17 @@
+Riya Sharma
+Email: riya@email.com
+Phone: 9999999999
+
+Profile:
+Software Test Engineer with 3 years of experience in automation testing and web technologies.
+
+Skills:
+Python, Selenium, SQL, Automation Testing, HTML, CSS, JavaScript
+
+Experience:
+Worked on automation frameworks using Selenium WebDriver and Python.
+Performed database validation using SQL queries.
+Built test scripts for web applications using HTML and CSS knowledge.
+
+Education:
+B.Tech in Computer Science

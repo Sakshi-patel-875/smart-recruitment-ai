@@ -1,0 +1,20 @@
+python
+java
+sql
+selenium
+html
+css
+javascript
+automation
+testing
+automation testing
+webdriver
+manual testing
+machine learning
+django
+flask
+react
+spring
+aws
+docker
+kubernetes
