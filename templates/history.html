@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Matching History</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+</head>
+
+<body class="bg-light">
+
+<div class="container mt-5">
+
+<h3 class="mb-4">Previous Matching Sessions</h3>
+
+<table class="table table-bordered table-striped">
+
+<tr>
+<th>Session ID</th>
+<th>Job Description</th>
+<th>Date</th>
+<th>Candidates</th>
+<th>View</th>
+</tr>
+
+{% for s in sessions %}
+
+<tr>
+
+<td>{{ s.id }}</td>
+
+<td>{{ s.job_description[:80] }}...</td>
+
+<td>{{ s.created_at.strftime("%d %b %Y") }}</td>
+
+<td>
+{{ s.candidates|length }}
+</td>
+
+<td>
+<a href="/session/{{ s.id }}" class="btn btn-sm btn-primary">
+View Candidates
+</a>
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+<a href="/match" class="btn btn-secondary mt-3">
+Back to Matching
+</a>
+
+</div>
+
+</body>
+</html>

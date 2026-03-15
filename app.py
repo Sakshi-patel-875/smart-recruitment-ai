@@ -1,4 +1,4 @@
-from flask import Flask, redirect, render_template, request
+from flask import Flask, redirect, render_template, request, session
 from resume_parser import extract_text, extract_skills
 from job_parser import extract_job_skills, extract_job_text_from_file
 from matcher import calculate_match
@@ -8,17 +8,37 @@ from flask import send_file
 from resume_parser import extract_experience
 from job_parser import extract_required_experience
 from accuracy import update_accuracy, get_accuracy
+from models import db, User, Session, Candidate
+from flask_login import LoginManager
+from flask_login import login_user, login_required, logout_user, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
 
 if not os.path.exists("resumes"):
     os.makedirs("resumes")
 
 app = Flask(__name__)
 
+app.config["SECRET_KEY"] = "secret123"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+db.init_app(app)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
 @app.route("/")
+@login_required
 def home():
     return render_template("home.html")
 
-@app.route("/dashboard", methods=["GET", "POST"])
+@app.route("/match", methods=["GET", "POST"])
+@login_required
 def index():
     results = []
     job_skills = []
@@ -56,7 +76,16 @@ def index():
             job_skills=job_skills,
             error=error_msg
         )
-    
+
+        # ⭐ CREATE MATCHING SESSION HERE
+        session = Session(
+            user_id=current_user.id,
+            job_description=job_text
+        )
+
+        db.session.add(session)
+        db.session.commit()
+
         # Extract job skills
         job_skills = extract_job_skills(job_text)
 
@@ -117,6 +146,18 @@ def index():
             "explanation": explanation
             })
 
+            candidate = Candidate(
+            session_id=session.id,
+            name=resume_file.filename,
+            score=match_score,
+            experience=candidate_exp,
+            recommendation=recommendation
+            )
+
+            db.session.add(candidate)
+
+        db.session.commit()
+
         # Sort results
         results = sorted(results, key=lambda x: x["score"], reverse=True)
 
@@ -154,9 +195,10 @@ def download_report():
     return send_file(report_path, as_attachment=True)
 
 @app.route("/accuracy")
+@login_required
 def accuracy():
     acc = get_accuracy()
-    return f"<h2>System Match Accuracy: {acc}%</h2><br><a href='/'>Go Back</a>"
+    return f"<h2>System Match Accuracy: {acc}%</h2><br><a href='/match'>Go Back</a>"
 
 @app.route("/validate", methods=["POST"])
 def validate():
@@ -172,7 +214,80 @@ def validate():
 def reset():
     app.config.pop("LAST_RESULTS", None)
     app.config.pop("JOB_SKILLS", None)
-    return redirect("/dashboard")
+    return redirect("/match")
+
+@app.route("/register", methods=["GET","POST"])
+def register():
+    if request.method == "POST":
+        name = request.form["name"]
+        email = request.form["email"]
+        password = generate_password_hash(request.form["password"])
+
+        existing_user = User.query.filter_by(email=email).first()
+
+        if existing_user:
+           return "Email already registered. Please login."
+
+        user = User(name=name, email=email, password=password)
+
+        db.session.add(user)
+        db.session.commit()
+
+        return redirect("/login")
+
+    return render_template("register.html")
+
+@app.route("/login", methods=["GET","POST"])
+def login():
+    if request.method == "POST":
+
+        email = request.form["email"]
+        password = request.form["password"]
+
+        user = User.query.filter_by(email=email).first()
+
+        if user and check_password_hash(user.password, password):
+            login_user(user)
+            return redirect("/match")
+
+        return "Invalid login"
+
+    return render_template("login.html")
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect("/login")
+
+@app.route("/history")
+@login_required
+def history():
+
+    sessions = Session.query.filter_by(user_id=current_user.id)\
+        .order_by(Session.created_at.desc())\
+        .all()
+
+    return render_template("history.html", sessions=sessions)
+
+@app.route("/session/<int:session_id>")
+@login_required
+def session_detail(session_id):
+
+    session_data = Session.query.filter_by(
+    id=session_id,
+    user_id=current_user.id
+    ).first_or_404()
+
+    candidates = Candidate.query.filter_by(session_id=session_id)\
+        .order_by(Candidate.score.desc())\
+        .all()
+
+    return render_template(
+        "session_detail.html",
+        session=session_data,
+        candidates=candidates
+    )
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -47,7 +47,13 @@
 <body class="bg-light p-3 p-md-5">
 
 <div class="container">
-    <a href="/" class="btn btn-secondary mb-3">Home</a>
+    <div class="d-flex gap-2 mb-3">
+        <a href="/" class="btn btn-secondary">Home</a>
+    
+        <a href="/history" class="btn btn-outline-dark">
+            Matching History
+        </a>
+    </div>
 
     <h2 class="mb-4">Smart Recruitment Portal with AI Matching</h2>
 
@@ -60,7 +66,7 @@
     <form method="POST" enctype="multipart/form-data" class="card p-4 mb-4">
         <div class="mb-3">
             <label class="form-label">Job Description</label>
-            <textarea name="jobdesc" class="form-control mb-2" rows="6"
+            <textarea name="jobdesc" class="form-control mb-2" rows="6" required
             placeholder="Paste Job Description here..."></textarea>
 
             <label class="form-label text-muted">OR Upload Job Description File (.txt / .pdf)</label>
@@ -69,7 +75,7 @@
 
         <div class="mb-3">
             <label class="form-label">Upload Candidate Resumes (multiple)</label>
-            <input type="file" name="resumes" class="form-control" multiple>
+            <input type="file" name="resumes" class="form-control" multiple accept=".pdf,.docx">
         </div>
 
         <button type="submit" class="btn btn-primary">Match Candidates</button>
@@ -91,7 +97,8 @@
     <a href="/download_report" class="btn btn-success mb-3">
         Download Match Report (PDF)
     </a>
-    
+    <form method="POST" action="/validate">
+    <input type="hidden" name="total" value="{{ results|length }}">
     <div class="card p-3">
         <h4>Candidate Ranking</h4>
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-2">
@@ -110,8 +117,6 @@
         {{ error }}
         </div>
         {% endif %}
-        <form method="POST" action="/validate">
-            <input type="hidden" name="total" value="{{ results|length }}">
         <div class="table-responsive">       
         <table class="table table-bordered mt-1">
             <tr>
@@ -147,7 +152,7 @@
                     {% endfor %}
                 </td>
                 <td class="text-center align-middle">
-                    <input type="checkbox" name="correct" value="1">
+                    <input type="checkbox" name="correct" value="{{ loop.index }}">
                 </td>
                 <td class="text-center align-middle">
                     {% if r.recommendation == "Recommended" %}

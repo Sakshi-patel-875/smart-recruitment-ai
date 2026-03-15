@@ -216,6 +216,15 @@ h5 {
         Smart Recruitment AI 
         <span class="badge bg-primary ms-2" style="font-size:12px;">AI Powered</span>
     </span>    
+
+    <div>
+        {% if current_user.is_authenticated %}
+            <a href="/logout" class="btn btn-danger">Logout</a>
+        {% else %}
+            <a href="/login" class="btn btn-outline-primary me-2">Login</a>
+            <a href="/register" class="btn btn-primary">Register</a>
+        {% endif %}
+    </div>
 </nav>
 
 <div class="container mt-4">
@@ -317,7 +326,7 @@ h5 {
     <div class="action-card text-center">
         <h5>Start New Candidate Matching</h5>
         <p class="mb-2">Upload resumes and job description to begin AI analysis.</p>
-        <a href="/dashboard" class="start-btn text-decoration-none d-inline-block">
+        <a href="/match" class="start-btn text-decoration-none d-inline-block">
             Launch Matching
         </a>        
     </div>
