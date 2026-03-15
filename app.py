@@ -19,11 +19,14 @@ if not os.path.exists("resumes"):
 app = Flask(__name__)
 
 app.config["SECRET_KEY"] = "secret123"
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
+
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+db_path = os.path.join(BASE_DIR, "database.db")
+
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + db_path
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
-
 with app.app_context():
     db.create_all()
 
